@@ -7,7 +7,8 @@ const HEADLESS = !process.env.IDL_SHOWBROWSER
 
 async function beforeEach () {
   const browser = await puppeteer.launch({ headless: HEADLESS })
-  const page = await browser.newPage()
+  const page = (await browser.newPage())
+  await page.setViewport({ width: 1280, height: 800 })
   await page.goto(IDL_URL, { waitUntil: 'networkidle2' })
   await page.waitForSelector('body')
   return { browser, page }
@@ -35,6 +36,12 @@ const tests = [
     await page.$eval('h1', el => {
       if (!el.innerText.includes('Introducing the New IDL Website')) {
         throw new Error('Text "Introducing the New IDL Website" not found')
+      }
+    })
+    await page.waitForSelector('span.label')
+    await page.$eval('span.label', span => {
+      if (!span.innerText.includes('Back to Home')) {
+        throw new Error(`Text "Back to Home" not found in "${span.innerText}"`)
       }
     })
   },
