@@ -5,7 +5,7 @@ import puppeteer from 'puppeteer'
 const IDL_URL = process.env.IDL_URL || 'http://localhost:4173/'
 const HEADLESS = !process.env.IDL_SHOWBROWSER
 
-async function beforeEach() {
+async function beforeEach () {
   const browser = await puppeteer.launch({ headless: HEADLESS })
   const page = await browser.newPage()
   await page.goto(IDL_URL, { waitUntil: 'networkidle2' })
@@ -13,7 +13,7 @@ async function beforeEach() {
   return { browser, page }
 }
 
-async function afterEach(browser) {
+async function afterEach (browser) {
   await browser.close()
 }
 
@@ -29,12 +29,26 @@ const tests = [
   },
   // Check 'Learn more' link
   async (browser, page) => {
-    await page.locator("::-p-text(Learn more)").click()
+    await page.locator('::-p-text(Learn more)').click()
     await page.waitForNavigation({ waitUntil: 'networkidle2' })
     await page.waitForSelector('h1')
     await page.$eval('h1', el => {
       if (!el.innerText.includes('Introducing the New IDL Website')) {
         throw new Error('Text "Introducing the New IDL Website" not found')
+      }
+    })
+  },
+  // Test 'share your feedback' link
+  async (browser, page) => {
+    await page.locator('::-p-text(share your feedback)').click()
+    await page.waitForNavigation({ waitUntil: 'networkidle2' })
+    await page.waitForSelector('h1')
+    await page.$eval('h1', el => {
+      if (!el.innerText.includes('Industry Documents Library Website beta:')) {
+        throw new Error('Text "Industry Documents Library Website beta:" not found')
+      }
+      if (!el.innerText.includes('User feedback')) {
+        throw new Error('Text "User feedback" not found')
       }
     })
   }
