@@ -16,6 +16,12 @@ If you need a different URL, set the environment variable `IDL_URL`.
 IDL_URL=https://example.com/ npx idl-smoketest
 ```
 
+The tests run headless by default. To see the browser:
+
+```
+IDL_SHOWBROWSER=1 npx idl-smoketest
+```
+
 ## License
 
 This software is licensed under the MIT License. See the LICENSE file for
