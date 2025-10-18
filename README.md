@@ -4,10 +4,16 @@ Automated smoke tester for the [Industry Documents Library](https://industrydocu
 
 ## Usage
 
-To test against your own dev instance running on localhost port 3000:
+To test against your own dev instance running on localhost port 4173:
 
 ```
-npx idl-smoketest 3000
+npx idl-smoketest
+```
+
+If you need a different URL, set the environment variable `IDL_URL`.
+
+```
+IDL_URL=https://example.com/ npx idl-smoketest
 ```
 
 ## License
