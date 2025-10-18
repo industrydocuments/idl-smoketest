@@ -1,0 +1,26 @@
+{
+  "name": "idl-smoketest",
+  "version": "1.0.0",
+  "description": "Automated smoke tester for the Industry Documents Library",
+  "type": "module",
+  "bin": "./idl-smoketest.js",
+  "scripts": {
+    "test": "standard --fix"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/industrydocuments/idl-smoketest.git"
+  },
+  "author": "Rich Trott <Richard.Trott@ucsf.edu>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/industrydocuments/idl-smoketest/issues"
+  },
+  "homepage": "https://github.com/industrydocuments/idl-smoketest#readme",
+  "dependencies": {
+    "puppeteer": "^24.24.1"
+  },
+  "devDependencies": {
+    "standard": "^17.1.0"
+  }
+}
