@@ -129,6 +129,18 @@ const tests = [
     await testMyLibrary('Search History', '#my-library-navbar .nav-link.active')
     await testMyLibrary('Settings', 'h1')
     await testMyLibrary('Log in', 'h6')
+  },
+
+  // Test checkboxes on News page
+  async (page) => {
+    await page.waitForSelector('.header-idl')
+    await page.locator('::-p-text(News)').click()
+    await page.waitForNavigation({ waitUntil: 'networkidle2' })
+    await page.waitForSelector('.post-wrapper') // Check that there are posts on the page
+    await page.locator('label.form-check-label').click()
+    await page.waitForSelector('.post-wrapper', { hidden: true }) // Wait for the posts to be hidden
+    await page.locator('::-p-text(Fossil Fuel)').click()
+    await page.waitForSelector('.post-wrapper') // Check that there are posts on the page again
   }
 ]
 
