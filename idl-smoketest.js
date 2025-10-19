@@ -20,17 +20,16 @@ async function afterEach (browser) {
 
 const tests = [
   // Check home page
-  async (browser, page) => {
+  async (page) => {
     await page.$eval('body', body => {
       if (!body.innerText.includes('Industry Documents Library')) {
         throw new Error('Text "Industry Documents Library" not found')
       }
     })
-    await browser.close()
   },
 
   // Check 'Learn more' link
-  async (browser, page) => {
+  async (page) => {
     await page.locator('::-p-text(Learn more)').click()
     await page.waitForNavigation({ waitUntil: 'networkidle2' })
     await page.waitForSelector('h1')
@@ -48,7 +47,7 @@ const tests = [
   },
 
   // Test 'share your feedback' link
-  async (browser, page) => {
+  async (page) => {
     await page.locator('::-p-text(share your feedback)').click()
     await page.waitForNavigation({ waitUntil: 'networkidle2' })
     await page.waitForSelector('h1')
@@ -62,55 +61,33 @@ const tests = [
     })
   },
 
-  // Test "About UCSF" link in UCSF banner
-  async (browser, page) => {
-    await page.locator('.header-ucsf nav a::-p-text(About UCSF)').click()
-    await page.waitForNavigation({ waitUntil: 'networkidle2' })
-    await page.$eval('h1', el => {
-      if (!el.innerText.includes('UCSF Overview')) {
-        throw new Error('Text "UCSF Overview" not found')
-      }
-    })
-  },
+  async (page) => {
+    const bannerChecks = [
+      { clickSelector: '.header-ucsf nav a::-p-text(About UCSF)', expected: 'UCSF Overview' },
+      { clickSelector: '.header-ucsf nav a::-p-text(Search UCSF)', expected: 'Search | UC San Francisco' },
+      { clickSelector: '.header-ucsf nav a::-p-text(UCSF Health)', expected: 'UCSF Health' },
+      { clickSelector: '.header-ucsf img', expected: 'Home | UC San Francisco' }
+    ]
 
-  // Test "Search UCSF" link in UCSF banner
-  async (browser, page) => {
-    await page.locator('.header-ucsf nav a::-p-text(Search UCSF)').click()
-    await page.waitForNavigation({ waitUntil: 'networkidle2' })
-    await page.$eval('title', el => {
-      if (!el.innerText.includes('Search | UC San Francisco')) {
-        throw new Error('Text "Search | UC San Francisco" not found')
-      }
-    })
-  },
-
-  // Test "UCSF Health" link in UCSF banner
-  async (browser, page) => {
-    await page.locator('.header-ucsf nav a::-p-text(UCSF Health)').click()
-    await page.waitForNavigation({ waitUntil: 'networkidle2' })
-    await page.$eval('title', el => {
-      if (!el.innerText.includes('UCSF Health')) {
-        throw new Error('Text "UCSF Health" not found')
-      }
-    })
-  },
-
-  // Test UCSF logo link in UCSF banner
-  async (browser, page) => {
-    await page.locator('.header-ucsf img').click()
-    await page.waitForNavigation({ waitUntil: 'networkidle2' })
-    await page.$eval('title', el => {
-      if (!el.innerText.includes('Home | UC San Francisco')) {
-        throw new Error('Text "Home | UC San Francisco" not found')
-      }
-    })
+    for (const check of bannerChecks) {
+      await page.goto(IDL_URL, { waitUntil: 'networkidle2' })
+      await page.waitForSelector('.header-ucsf')
+      await page.locator(check.clickSelector).click()
+      await page.waitForNavigation({ waitUntil: 'networkidle2' })
+      await page.waitForSelector('title')
+      await page.$eval('title', (el, expected) => {
+        if (!el.innerText.includes(expected)) {
+          throw new Error(`Text "${expected}" not found`)
+        }
+      }, check.expected)
+    }
   }
 ]
 
 try {
   for (const test of tests) {
     const { browser, page } = await beforeEach()
-    await test(browser, page)
+    await test(page)
     await afterEach(browser)
   }
   process.exit(0)
