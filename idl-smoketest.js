@@ -28,6 +28,7 @@ const tests = [
     })
     await browser.close()
   },
+
   // Check 'Learn more' link
   async (browser, page) => {
     await page.locator('::-p-text(Learn more)').click()
@@ -45,6 +46,7 @@ const tests = [
       }
     })
   },
+
   // Test 'share your feedback' link
   async (browser, page) => {
     await page.locator('::-p-text(share your feedback)').click()
@@ -56,6 +58,50 @@ const tests = [
       }
       if (!el.innerText.includes('User feedback')) {
         throw new Error('Text "User feedback" not found')
+      }
+    })
+  },
+
+  // Test "About UCSF" link in UCSF banner
+  async (browser, page) => {
+    await page.locator('.header-ucsf nav a::-p-text(About UCSF)').click()
+    await page.waitForNavigation({ waitUntil: 'networkidle2' })
+    await page.$eval('h1', el => {
+      if (!el.innerText.includes('UCSF Overview')) {
+        throw new Error('Text "UCSF Overview" not found')
+      }
+    })
+  },
+
+  // Test "Search UCSF" link in UCSF banner
+  async (browser, page) => {
+    await page.locator('.header-ucsf nav a::-p-text(Search UCSF)').click()
+    await page.waitForNavigation({ waitUntil: 'networkidle2' })
+    await page.$eval('title', el => {
+      if (!el.innerText.includes('Search | UC San Francisco')) {
+        throw new Error('Text "Search | UC San Francisco" not found')
+      }
+    })
+  },
+
+  // Test "UCSF Health" link in UCSF banner
+  async (browser, page) => {
+    await page.locator('.header-ucsf nav a::-p-text(UCSF Health)').click()
+    await page.waitForNavigation({ waitUntil: 'networkidle2' })
+    await page.$eval('title', el => {
+      if (!el.innerText.includes('UCSF Health')) {
+        throw new Error('Text "UCSF Health" not found')
+      }
+    })
+  },
+
+  // Test UCSF logo link in UCSF banner
+  async (browser, page) => {
+    await page.locator('.header-ucsf img').click()
+    await page.waitForNavigation({ waitUntil: 'networkidle2' })
+    await page.$eval('title', el => {
+      if (!el.innerText.includes('Home | UC San Francisco')) {
+        throw new Error('Text "Home | UC San Francisco" not found')
       }
     })
   }
