@@ -61,7 +61,7 @@ const tests = [
     })
   },
 
-  // Check banner links
+  // Check external header/footer links
   async (page) => {
     const bannerChecks = [
       { clickSelector: '.header-ucsf nav a::-p-text(About UCSF)', expected: /^https:\/\/www\.ucsf\.edu\/about$/ },
@@ -69,7 +69,12 @@ const tests = [
       { clickSelector: '.header-ucsf nav a::-p-text(UCSF Health)', expected: /^https:\/\/www\.ucsfhealth\.org\/$/ },
       { clickSelector: '.header-ucsf img', expected: /^https:\/\/www\.ucsf\.edu\/$/ },
       { clickSelector: '.header-idl nav ::-p-text(Industry Documents Library)', expected: /^https?:\/\/[a-zA-Z0-9:.-]+\/(home\/)?$/ },
-      { clickSelector: '.header-idl nav ::-p-text(Industries)', expected: /^https?:\/\/[a-zA-Z0-9:.-]+\/(home\/)?$/ }
+      { clickSelector: '.header-idl nav ::-p-text(Industries)', expected: /^https?:\/\/[a-zA-Z0-9:.-]+\/(home\/)?$/ },
+      { clickSelector: 'footer .logo', expected: /^https?:\/\/www\.library\.ucsf\.edu\/$/ },
+      { clickSelector: 'footer img[alt="Instagram"]', expected: /^https:\/\/www\.instagram\.com\/ucsf_industrydocs\/$/ },
+      { clickSelector: 'footer img[alt="Bluesky"]', expected: /^https:\/\/bsky\.app\/profile\/ucsf-industrydocs\.bsky\.social$/ },
+      { clickSelector: 'footer img[alt="YouTube"]', expected: /^https:\/\/www\.youtube\.com\/@ucsfindustrydocumentslibrary\/videos$/ },
+      { clickSelector: 'footer img[alt="LinkedIn"]', expected: /^https:\/\/www\.linkedin\.com\/company\/industry-documents-library$/ }
     ]
 
     for (const check of bannerChecks) {
@@ -84,13 +89,19 @@ const tests = [
     }
   },
 
-  // Check IDL banner links (that aren't links to the home page as those are checked in the previous test)
+  // Check header/footer nav links (that aren't links to the home page as those are checked in the previous test)
   async (page) => {
     const bannerChecks = [
-      { clickSelector: '.header-idl nav ::-p-text(News)', expected: 'News', assertSelector: 'li.breadcrumb-item.active:nth-child(2)' },
-      { clickSelector: '.header-idl nav ::-p-text(Resources)', expected: 'Resources', assertSelector: 'li.breadcrumb-item.active:nth-child(2)' },
-      { clickSelector: '.header-idl nav ::-p-text(About IDL)', expected: 'About IDL', assertSelector: 'li.breadcrumb-item.active:nth-child(2)' },
-      { clickSelector: '.header-idl nav ::-p-text(Help)', expected: 'Help', assertSelector: 'li.breadcrumb-item.active:nth-child(2)' }
+      { clickSelector: '.header-idl nav ::-p-text(News)', expected: 'Home\nNews' },
+      { clickSelector: '.header-idl nav ::-p-text(Resources)', expected: 'Home\nResources' },
+      { clickSelector: '.header-idl nav ::-p-text(About IDL)', expected: 'Home\nAbout IDL' },
+      { clickSelector: '.header-idl nav ::-p-text(Help)', expected: 'Home\nHelp' },
+      // TODO: Bug? OIDA-886? Should be Home\nAbout IDL\nPolicies\nPrivacy Policy
+      { clickSelector: 'footer ::-p-text(Privacy Policy)', expected: 'Home\nIDL Privacy Policy' },
+      { clickSelector: 'footer ::-p-text(Copyright & Fair Use)', expected: 'Home\nCopyright and Fair Use' },
+      { clickSelector: 'footer ::-p-text(Tutorial Videos)', expected: 'Home\nHow to Videos' },
+      { clickSelector: 'footer ::-p-text(Ask Us)', expected: 'Home\nAsk Us' },
+      { clickSelector: 'footer ::-p-text(Donate)', expected: 'Home\nGiving' }
     ]
 
     for (const check of bannerChecks) {
@@ -98,8 +109,13 @@ const tests = [
       await page.waitForSelector('.header-idl')
       await page.locator(check.clickSelector).click()
       await page.waitForNavigation({ waitUntil: 'networkidle2' })
-      await page.waitForSelector(check.assertSelector)
-      await page.$eval(check.assertSelector, (el, expected) => {
+      // Wait for new breadcrumbs to render.
+      try {
+        await page.waitForSelector(`li.breadcrumb-item:nth-child(${check.expected.split('\n').length})`)
+      } catch (error) {
+        throw new Error(`Waiting for breadcrumbs for ${check.clickSelector}: ${error.message}`)
+      }
+      await page.$eval('.breadcrumb', (el, expected) => {
         if (!el.innerText.includes(expected)) {
           throw new Error(`Text "${expected}" not found in ${el.innerText}`)
         }
