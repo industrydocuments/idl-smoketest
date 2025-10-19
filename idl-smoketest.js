@@ -61,12 +61,15 @@ const tests = [
     })
   },
 
+  // Check banner links
   async (page) => {
     const bannerChecks = [
-      { clickSelector: '.header-ucsf nav a::-p-text(About UCSF)', expected: 'UCSF Overview' },
-      { clickSelector: '.header-ucsf nav a::-p-text(Search UCSF)', expected: 'Search | UC San Francisco' },
-      { clickSelector: '.header-ucsf nav a::-p-text(UCSF Health)', expected: 'UCSF Health' },
-      { clickSelector: '.header-ucsf img', expected: 'Home | UC San Francisco' }
+      { clickSelector: '.header-ucsf nav a::-p-text(About UCSF)', expected: /^https:\/\/www\.ucsf\.edu\/about$/ },
+      { clickSelector: '.header-ucsf nav a::-p-text(Search UCSF)', expected: /^https:\/\/www\.ucsf\.edu\/search$/ },
+      { clickSelector: '.header-ucsf nav a::-p-text(UCSF Health)', expected: /^https:\/\/www\.ucsfhealth\.org\/$/ },
+      { clickSelector: '.header-ucsf img', expected: /^https:\/\/www\.ucsf\.edu\/$/ },
+      { clickSelector: '.header-idl nav ::-p-text(Industry Documents Library)', expected: /^https?:\/\/[a-zA-Z0-9:.-]+\/(home\/)?$/ },
+      { clickSelector: '.header-idl nav ::-p-text(Industries)', expected: /^https?:\/\/[a-zA-Z0-9:.-]+\/(home\/)?$/ }
     ]
 
     for (const check of bannerChecks) {
@@ -74,13 +77,58 @@ const tests = [
       await page.waitForSelector('.header-ucsf')
       await page.locator(check.clickSelector).click()
       await page.waitForNavigation({ waitUntil: 'networkidle2' })
-      await page.waitForSelector('title')
-      await page.$eval('title', (el, expected) => {
+      const currentUrl = await page.evaluate('window.location')
+      if (check.expected.test(currentUrl.href.replace(/#.*$/, '')) === false) {
+        throw new Error(`Expected URL to match "${check.expected}", but got "${currentUrl.href}"`)
+      }
+    }
+  },
+
+  // Check IDL banner links (that aren't links to the home page as those are checked in the previous test)
+  async (page) => {
+    const bannerChecks = [
+      { clickSelector: '.header-idl nav ::-p-text(News)', expected: 'News', assertSelector: 'li.breadcrumb-item.active:nth-child(2)' },
+      { clickSelector: '.header-idl nav ::-p-text(Resources)', expected: 'Resources', assertSelector: 'li.breadcrumb-item.active:nth-child(2)' },
+      { clickSelector: '.header-idl nav ::-p-text(About IDL)', expected: 'About IDL', assertSelector: 'li.breadcrumb-item.active:nth-child(2)' },
+      { clickSelector: '.header-idl nav ::-p-text(Help)', expected: 'Help', assertSelector: 'li.breadcrumb-item.active:nth-child(2)' }
+    ]
+
+    for (const check of bannerChecks) {
+      await page.goto(IDL_URL, { waitUntil: 'networkidle2' })
+      await page.waitForSelector('.header-idl')
+      await page.locator(check.clickSelector).click()
+      await page.waitForNavigation({ waitUntil: 'networkidle2' })
+      await page.waitForSelector(check.assertSelector)
+      await page.$eval(check.assertSelector, (el, expected) => {
         if (!el.innerText.includes(expected)) {
-          throw new Error(`Text "${expected}" not found`)
+          throw new Error(`Text "${expected}" not found in ${el.innerText}`)
         }
       }, check.expected)
     }
+  },
+
+  // Test MyLibrary menu links
+  async (page) => {
+    await page.goto(IDL_URL, { waitUntil: 'networkidle2' })
+    await page.waitForSelector('.header-idl')
+
+    const testMyLibrary = async (itemText, selector) => {
+      await page.locator('.header-idl .my-library-dropdown ::-p-text(My Library)').click()
+      await page.locator(`.my-library-dropdown .dropdown-menu ::-p-text(${itemText})`).click()
+      await page.waitForSelector(selector)
+      await page.$eval(selector, (el, expected) => {
+        if (!el.innerText.toLowerCase().includes(expected.toLowerCase())) {
+          throw new Error(`Text "${expected}" not found`)
+        }
+      }, itemText)
+    }
+
+    await testMyLibrary('My Documents', '#my-library-navbar .nav-link.active')
+    await testMyLibrary('My Publications', '#my-library-navbar .nav-link.active')
+    await testMyLibrary('My Searches', '#my-library-navbar .nav-link.active')
+    await testMyLibrary('Search History', '#my-library-navbar .nav-link.active')
+    await testMyLibrary('Settings', 'h1')
+    await testMyLibrary('Log in', 'h6')
   }
 ]
 
