@@ -157,6 +157,65 @@ const tests = [
     await page.waitForSelector('.post-wrapper', { hidden: true }) // Wait for the posts to be hidden
     await page.locator('::-p-text(Fossil Fuel)').click()
     await page.waitForSelector('.post-wrapper') // Check that there are posts on the page again
+  },
+
+  // Test dropdown in "What are you looking for?" box
+  async (page) => {
+    await page.waitForSelector('h2')
+    await page.$eval('h2', (el) => {
+      if (!el.innerText === 'What are you looking for?') {
+        throw new Error(`Text "What are you looking for?" not found in ${el.innerText}`)
+      }
+    })
+    await page.waitForSelector('.search-industry-dropdown .dropdown-button-label')
+    await page.$eval('.search-industry-dropdown .dropdown-button-label', (el) => {
+      if (el.innerText !== 'All Industries') {
+        throw new Error(`Expected dropdown button text to be "All Industries", but got "${el.innerText}"`)
+      }
+    })
+    // React creates two buttons and hides one based on  viewport size.
+    // Just click them both.
+    await page.$$eval('.search-industry-dropdown button', (buttons) => {
+      buttons.forEach(button => { button.checkVisibility() && button.click() })
+    })
+    await page.waitForSelector('.search-industry-dropdown .dropdown-menu')
+    await page.$eval('.search-industry-dropdown .dropdown-menu', (el) => {
+      if (!el.innerText.includes('All IndustriesTobaccoOpioidsChemicalDrugFoodFossil Fuel')) {
+        throw new Error(`Dropdown menu text "${el.innerText}" does not match expected text`)
+      }
+    })
+    await page.$$eval('.search-industry-dropdown .dropdown-menu ::-p-text(Tobacco)', (buttons) => {
+      buttons.forEach((button) => { button.checkVisibility() && button.click() })
+    })
+    await page.$eval('.search-industry-dropdown .dropdown-button-label', (el) => {
+      if (el.innerText !== 'Tobacco') {
+        throw new Error(`Expected dropdown button text to be "Tobacco", but got "${el.innerText}"`)
+      }
+    })
+  },
+
+  // Test landing page search
+  async (page) => {
+    await page.waitForSelector('#search-input')
+    await page.$$eval('#search-input', (inputs) => {
+      inputs.forEach(input => { input.checkVisibility() && input.focus() })
+    })
+    await page.keyboard.type('Test search')
+    await page.keyboard.press('Enter')
+    await page.waitForNavigation({ waitUntil: 'networkidle2' })
+    await page.waitForSelector('.page-tools-top ::-p-text(Results)')
+    await page.$$eval('.page-tools-top', (elements) => {
+      const top = elements.filter(el => el.checkVisibility())
+      if (top.length === 0) {
+        throw new Error('Can not find visible .page-tools-top')
+      }
+      if (top.length > 1) {
+        throw new Error(`Expected only one visible .page-tools-top, but found ${top.length}`)
+      }
+      if (!/\d+\s*Results/.test(top[0].innerText)) {
+        throw new Error(`Expected text matching /\\d+\\s*Results/ in .page-tools-top, but got "${top[0].innerText}"`)
+      }
+    })
   }
 ]
 
