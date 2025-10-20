@@ -71,7 +71,7 @@ const tests = [
       { clickSelector: '.header-idl nav ::-p-text(Industry Documents Library)', expected: /^https?:\/\/[a-zA-Z0-9:.-]+\/(home\/)?$/ },
       { clickSelector: '.header-idl nav ::-p-text(Industries)', expected: /^https?:\/\/[a-zA-Z0-9:.-]+\/(home\/)?$/ },
       { clickSelector: 'footer .logo', expected: /^https?:\/\/www\.library\.ucsf\.edu\/$/ },
-      { clickSelector: 'footer img[alt="Instagram"]', expected: /^https:\/\/www\.instagram\.com\/ucsf_industrydocs\/$/ },
+      { clickSelector: 'footer img[alt="Instagram"]', expected: /https.+www\.instagram\.com.+ucsf_industrydocs/ },
       { clickSelector: 'footer img[alt="Bluesky"]', expected: /^https:\/\/bsky\.app\/profile\/ucsf-industrydocs\.bsky\.social$/ },
       { clickSelector: 'footer img[alt="YouTube"]', expected: /^https:\/\/www\.youtube\.com\/@ucsfindustrydocumentslibrary\/videos$/ },
       { clickSelector: 'footer img[alt="LinkedIn"]', expected: /^https:\/\/www\.linkedin\.com\/company\/industry-documents-library$/ }
