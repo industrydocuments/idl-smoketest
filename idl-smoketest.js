@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 import puppeteer from 'puppeteer'
-import { test } from 'node:test'
+import { test, describe } from 'node:test'
+import { availableParallelism } from 'os'
 
 const IDL_URL = process.env.IDL_URL || 'http://localhost:4173/'
 const HEADLESS = !process.env.IDL_SHOWBROWSER
@@ -92,7 +93,7 @@ const tests = [
         await page.goto(IDL_URL, { waitUntil: 'networkidle2' })
         await page.waitForSelector('.header-ucsf')
         await page.locator(check.clickSelector).click()
-        await page.waitForNavigation({ waitUntil: 'networkidle2' })
+        await page.waitForNavigation()
         const currentUrl = await page.evaluate('window.location')
         if (check.expected.test(currentUrl.href.replace(/#.*$/, '')) === false) {
           throw new Error(`Expected URL to match "${check.expected}", but got "${currentUrl.href}"`)
@@ -246,16 +247,18 @@ const tests = [
   }
 ]
 
-for (const currentTest of tests) {
-  const fn = currentTest
-  test(currentTest.description, async () => {
-    const { browser, page } = await setup()
-    try {
-      await fn.test(page)
-    } catch (err) {
-      console.error(err)
-    } finally {
-      await teardown(browser)
-    }
-  })
-}
+describe('IDL Smoke Tests', {concurrency: 4}, async () => {
+  for (const currentTest of tests) {
+    const fn = currentTest
+    test(currentTest.description, async () => {
+      const { browser, page } = await setup()
+      try {
+        await fn.test(page)
+      } catch (err) {
+        console.error(err)
+      } finally {
+        await teardown(browser)
+      }
+    })
+  }
+})
