@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import puppeteer from 'puppeteer'
+import { test } from 'node:test'
 
 const IDL_URL = process.env.IDL_URL || 'http://localhost:4173/'
 const HEADLESS = !process.env.IDL_SHOWBROWSER
@@ -244,8 +245,6 @@ const tests = [
     }
   }
 ]
-
-const { test } = await import('node:test')
 
 for (const currentTest of tests) {
   const fn = currentTest
