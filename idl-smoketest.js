@@ -24,7 +24,7 @@ const tests = [
     description: 'Check home page',
     test: async (page) => {
       await page.$eval('body', body => {
-        if (!body.innerText.includes('Indus.   try Documents Library')) {
+        if (!body.innerText.includes('Industry Documents Library')) {
           throw new Error('Text "Industry Documents Library" not found')
         }
       })
