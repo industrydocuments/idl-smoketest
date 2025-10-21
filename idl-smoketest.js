@@ -6,7 +6,7 @@ import { test } from 'node:test'
 const IDL_URL = process.env.IDL_URL || 'http://localhost:4173/'
 const HEADLESS = !process.env.IDL_SHOWBROWSER
 
-async function beforeEach () {
+async function setup () {
   const browser = await puppeteer.launch({ headless: HEADLESS })
   const page = (await browser.newPage())
   await page.setViewport({ width: 1280, height: 800 })
@@ -15,7 +15,7 @@ async function beforeEach () {
   return { browser, page }
 }
 
-async function afterEach (browser) {
+async function teardown (browser) {
   await browser.close()
 }
 
@@ -249,13 +249,13 @@ const tests = [
 for (const currentTest of tests) {
   const fn = currentTest
   test(currentTest.description, async () => {
-    const { browser, page } = await beforeEach()
+    const { browser, page } = await setup()
     try {
       await fn.test(page)
     } catch (err) {
       console.error(err)
     } finally {
-      await afterEach(browser)
+      await teardown(browser)
     }
   })
 }
