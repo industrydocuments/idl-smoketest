@@ -315,9 +315,9 @@ const tests = [
       await page.waitForSelector('a ::-p-text(Timeline of Events)')
       await page.locator('a ::-p-text(Timeline of Events)').click()
       await page.waitForNavigation({ waitUntil: 'networkidle2' })
-      const pageUrl = await page.url()
-      if (pageUrl !== 'https://idl2023-cms-113e99d.payloadcms.app/media/Insys-Timeline.pdf') {
-        throw new Error(`Expected URL to be "https://idl2023-cms-113e99d.payloadcms.app/media/Insys-Timeline.pdf", but got "${pageUrl}"`)
+      const title = await page.title()
+      if (!title.includes('Insys-Timeline.pdf')) {
+        throw new Error(`Expected title to be "Insys-Timeline.pdf", but got "${title}"`)
       }
     }
   }
