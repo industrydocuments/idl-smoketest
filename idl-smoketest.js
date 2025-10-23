@@ -323,7 +323,7 @@ const tests = [
   }
 ]
 
-describe('IDL Smoke Tests', { concurrency: true }, async () => {
+describe('IDL Smoke Tests', { concurrency: 4 }, async () => {
   for (const currentTest of tests) {
     const fn = currentTest
     test(currentTest.description, async () => {
