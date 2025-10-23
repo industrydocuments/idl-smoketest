@@ -300,6 +300,26 @@ const tests = [
         }
       }
     }
+  },
+
+  {
+    description: 'Check Insys timeline',
+    test: async (page) => {
+      await page.waitForSelector('.industry-menu')
+      await page.locator('.industry-menu ::-p-text(Opioids)').click()
+      await page.waitForSelector('h2 ::-p-text(Opioids Industry)')
+      await page.waitForSelector('#industry-navbar')
+      await page.locator('#industry-navbar ::-p-text(Collections)').click()
+      await page.waitForSelector('a ::-p-text(Insys Litigation Documents)')
+      await page.locator('a ::-p-text(Insys Litigation Documents)').click()
+      await page.waitForSelector('a ::-p-text(Timeline of Events)')
+      await page.locator('a ::-p-text(Timeline of Events)').click()
+      await page.waitForNavigation({ waitUntil: 'networkidle2' })
+      const pageUrl = await page.url()
+      if (pageUrl !== 'https://idl2023-cms-113e99d.payloadcms.app/media/Insys-Timeline.pdf') {
+        throw new Error(`Expected URL to be "https://idl2023-cms-113e99d.payloadcms.app/media/Insys-Timeline.pdf", but got "${pageUrl}"`)
+      }
+    }
   }
 ]
 
