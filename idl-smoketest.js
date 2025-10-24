@@ -9,6 +9,8 @@ const HEADLESS = !process.env.IDL_SHOWBROWSER
 async function setup () {
   const browser = await puppeteer.launch({ headless: HEADLESS })
   const page = (await browser.newPage())
+  page.setDefaultTimeout(5000)
+  page.setDefaultNavigationTimeout(10000)
   await page.setViewport({ width: 1280, height: 800 })
   await page.goto(IDL_URL, { waitUntil: 'networkidle2' })
   await page.waitForSelector('body')
@@ -273,7 +275,7 @@ const tests = [
   },
 
   {
-    description: 'Check external header/footer links',
+    description: 'Test external header/footer links',
     test: async (page) => {
       const bannerChecks = [
         { clickSelector: '.header-ucsf nav a::-p-text(About UCSF)', expected: /^https:\/\/www\.ucsf\.edu\/about$/ },
@@ -303,7 +305,7 @@ const tests = [
   },
 
   {
-    description: 'Check Insys timeline',
+    description: 'Test a PDF link',
     test: async (page) => {
       await page.waitForSelector('.industry-menu')
       await page.locator('.industry-menu ::-p-text(Opioids)').click()
@@ -313,12 +315,42 @@ const tests = [
       await page.waitForSelector('a ::-p-text(Insys Litigation Documents)')
       await page.locator('a ::-p-text(Insys Litigation Documents)').click()
       await page.waitForSelector('a ::-p-text(Timeline of Events)')
+      try {
+        await page.waitForSelector('a ::-p-text(Timeline of Events) i.bi-file-earmark-pdf')
+      } catch {
+        throw new Error('Expected PDF file indicator to be present')
+      }
       await page.locator('a ::-p-text(Timeline of Events)').click()
       await page.waitForNavigation({ waitUntil: 'networkidle2' })
       await page.waitForSelector('.SharedFileHeaderContent-name')
       const fileName = await page.$eval('.SharedFileHeaderContent-name', el => el.textContent)
       if (!fileName.includes('Insys-Timeline.pdf')) {
         throw new Error(`Expected title to be "Insys-Timeline.pdf", but got "${fileName}"`)
+      }
+    }
+  },
+
+  {
+    description: 'Test an external link in CMS content',
+    test: async (page) => {
+      await page.waitForSelector('.industry-menu')
+      await page.locator('.industry-menu ::-p-text(Chemical)').click()
+      await page.waitForSelector('h2 ::-p-text(Chemical Industry)')
+      await page.waitForSelector('#industry-navbar')
+      await page.locator('#industry-navbar ::-p-text(Collections)').click()
+      await page.waitForSelector('a ::-p-text(Forever Pollution Project Collection)')
+      await page.locator('a ::-p-text(Forever Pollution Project Collection)').click()
+      await page.waitForSelector('a ::-p-text(Forever Lobbying Project)')
+      try {
+        await page.waitForSelector('a ::-p-text(Forever Lobbying Project) i.bi-box-arrow-up-right')
+      } catch {
+        throw new Error('Expected external link indicator to be present')
+      }
+      await page.locator('a ::-p-text(Forever Lobbying Project)').click()
+      await page.waitForNavigation({ waitUntil: 'networkidle2' })
+      const currentUrl = await page.evaluate('window.location')
+      if (!currentUrl.href.startsWith('https://foreverpollution.eu/lobbying')) {
+        throw new Error(`Expected URL to include "https://foreverpollution.eu/lobbying", but got "${currentUrl.href}"`)
       }
     }
   }
