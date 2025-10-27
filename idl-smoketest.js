@@ -375,7 +375,6 @@ const tests = [
         await page.keyboard.press('Tab')
         activeElement = await getActiveElement()
       }
-      console.log('FHQ', await page.evaluate(el => window.getComputedStyle(el).outline, activeElement))
       const noFocusIndicator = await page.evaluate((el) => window.getComputedStyle(el).outline.includes('0px'), targetElement)
       if (noFocusIndicator) {
         throw new Error('Expected focus indicator to be visible')
