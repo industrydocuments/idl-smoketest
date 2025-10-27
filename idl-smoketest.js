@@ -353,10 +353,38 @@ const tests = [
         throw new Error(`Expected URL to include "https://foreverpollution.eu/lobbying", but got "${currentUrl.href}"`)
       }
     }
+  },
+
+  {
+    description: 'Test for keyboard focus indicators',
+    test: async (page) => {
+      const getActiveElement = async () => {
+        return await page.evaluateHandle(() => document.activeElement)
+      }
+      const areDifferentElements = async (el1, el2) => {
+        return await page.evaluate((e1, e2) => e1 !== e2, el1, el2)
+      }
+
+      await page.waitForSelector('.industry-menu')
+      const targetElement = await page.$('.industry-menu .mx-0text-light')
+      if (!targetElement) {
+        throw new Error('Expected target element to be present')
+      }
+      let activeElement = await getActiveElement()
+      while (await areDifferentElements(activeElement, targetElement)) {
+        await page.keyboard.press('Tab')
+        activeElement = await getActiveElement()
+      }
+      console.log('FHQ', await page.evaluate(el => window.getComputedStyle(el).outline, activeElement))
+      const noFocusIndicator = await page.evaluate((el) => window.getComputedStyle(el).outline.includes('0px'), targetElement)
+      if (noFocusIndicator) {
+        throw new Error('Expected focus indicator to be visible')
+      }
+    }
   }
 ]
 
-describe('IDL Smoke Tests', { concurrency: 4 }, async () => {
+describe('IDL Smoke Tests', { concurrency: 4, timeout: 30000 }, async () => {
   for (const currentTest of tests) {
     const fn = currentTest
     test(currentTest.description, async () => {
