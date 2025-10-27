@@ -81,7 +81,6 @@ const tests = [
         { clickSelector: '.header-idl nav ::-p-text(Resources)', expected: 'Home\nResources' },
         { clickSelector: '.header-idl nav ::-p-text(About IDL)', expected: 'Home\nAbout IDL' },
         { clickSelector: '.header-idl nav ::-p-text(Help)', expected: 'Home\nHelp' },
-        // TODO: Bug? OIDA-886? Should be Home\nAbout IDL\nPolicies\nPrivacy Policy
         { clickSelector: 'footer ::-p-text(Privacy Policy)', expected: 'Home\nIDL Privacy Policy' },
         { clickSelector: 'footer ::-p-text(Copyright & Fair Use)', expected: 'Home\nCopyright and Fair Use' },
         { clickSelector: 'footer ::-p-text(Tutorial Videos)', expected: 'Home\nHow to Videos' },
@@ -157,7 +156,7 @@ const tests = [
     test: async (page) => {
       await page.waitForSelector('h2')
       await page.$eval('h2', (el) => {
-        if (!el.innerText === 'What are you looking for?') {
+        if (el.innerText !== 'What are you looking for?') {
           throw new Error(`Text "What are you looking for?" not found in ${el.innerText}`)
         }
       })
@@ -170,7 +169,11 @@ const tests = [
       // React creates two buttons and hides one based on  viewport size.
       // Just click them both.
       await page.$$eval('.search-industry-dropdown button', (buttons) => {
-        buttons.forEach(button => { button.checkVisibility() && button.click() })
+        for (const button of buttons) {
+          if (button.checkVisibility?.()) {
+            button.click()
+          }
+        }
       })
       await page.waitForSelector('.search-industry-dropdown .dropdown-menu')
       await page.$eval('.search-industry-dropdown .dropdown-menu', (el) => {
@@ -179,7 +182,11 @@ const tests = [
         }
       })
       await page.$$eval('.search-industry-dropdown .dropdown-menu ::-p-text(Tobacco)', (buttons) => {
-        buttons.forEach((button) => { button.checkVisibility() && button.click() })
+        for (const button of buttons) {
+          if (button.checkVisibility?.()) {
+            button.click()
+          }
+        }
       })
       await page.$eval('.search-industry-dropdown .dropdown-button-label', (el) => {
         if (el.innerText !== 'Tobacco') {
@@ -195,7 +202,11 @@ const tests = [
     test: async (page) => {
       await page.waitForSelector('#search-input')
       await page.$$eval('#search-input', (inputs) => {
-        inputs.forEach(input => { input.checkVisibility() && input.focus() })
+        for (const input of inputs) {
+          if (input.checkVisibility?.()) {
+            input.focus()
+          }
+        }
       })
       await page.keyboard.type('Test search')
       await page.keyboard.press('Enter')
@@ -375,7 +386,7 @@ const tests = [
         await page.keyboard.press('Tab')
         activeElement = await getActiveElement()
       }
-      const noFocusIndicator = await page.evaluate((el) => window.getComputedStyle(el).outline.includes('0px'), targetElement)
+      const noFocusIndicator = await page.evaluate((el) => globalThis.getComputedStyle(el).outline.includes('0px'), targetElement)
       if (noFocusIndicator) {
         throw new Error('Expected focus indicator to be visible')
       }
