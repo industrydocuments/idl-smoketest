@@ -394,6 +394,27 @@ const tests = [
       await checkFocus('.my-library-dropdown .dropdown-toggle', '.my-library-dropdown', 'box-shadow', 'rgba(49, 132, 253, 0.5) 0px 0px 0px 4px')
       await checkFocus('.industry-menu .mx-0text-light', '.industry-menu .mx-0text-light', 'outline', 'rgb(0, 113, 173) solid 3px')
     }
+  },
+
+  {
+    description: 'Test for text alternative for share icon',
+    test: async (page) => {
+      await page.waitForSelector('.industry-menu')
+      await page.locator('.industry-menu ::-p-text(Tobacco)').click()
+      await page.waitForSelector('h2 ::-p-text(Tobacco Industry)')
+      await page.waitForSelector('#industry-navbar')
+      await page.locator('#industry-navbar ::-p-text(Collections)').click()
+      await page.waitForSelector('a ::-p-text(Juul Labs Collection)')
+      await page.locator('a ::-p-text(Juul Labs Collection)').click()
+      await page.waitForSelector('.collection-toolbar')
+
+      await page.waitForSelector('.bi-share')
+      const shareIcon = await page.$('.bi-share')
+      const ariaLabel = await page.evaluate(el => el.getAttribute('aria-label'), shareIcon)
+      if (ariaLabel !== 'Share') {
+        throw new Error(`Expected aria-label to be "Share", but got "${ariaLabel}"`)
+      }
+    }
   }
 ]
 
