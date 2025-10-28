@@ -375,21 +375,24 @@ const tests = [
       const areDifferentElements = async (el1, el2) => {
         return await page.evaluate((e1, e2) => e1 !== e2, el1, el2)
       }
+      // Sometimes, the target that is focused is not where the indicator ends
+      // up. For example, sometimes the focus indicator is on a parent element.
+      const checkFocus = async (targetSelector, indicatorSelector, cssAttribute, expectedStyle) => {
+        await page.waitForSelector(targetSelector)
+        const targetElement = await page.$(targetSelector)
+        let activeElement = await getActiveElement()
+        while (await areDifferentElements(activeElement, targetElement)) {
+          await page.keyboard.press('Tab')
+          activeElement = await getActiveElement()
+        }
+        const computedStyle = await page.evaluate((el, cssAttribute) => globalThis.getComputedStyle(el)[cssAttribute], await page.$(indicatorSelector), cssAttribute)
+        if (computedStyle !== expectedStyle) {
+          throw new Error(`Expected focus indicator '${expectedStyle}' to be visible as '${cssAttribute}' of '${indicatorSelector}' when '${targetSelector}' is focused; seeing '${computedStyle}' instead`)
+        }
+      }
 
-      await page.waitForSelector('.industry-menu')
-      const targetElement = await page.$('.industry-menu .mx-0text-light')
-      if (!targetElement) {
-        throw new Error('Expected target element to be present')
-      }
-      let activeElement = await getActiveElement()
-      while (await areDifferentElements(activeElement, targetElement)) {
-        await page.keyboard.press('Tab')
-        activeElement = await getActiveElement()
-      }
-      const noFocusIndicator = await page.evaluate((el) => globalThis.getComputedStyle(el).outline.includes('0px'), targetElement)
-      if (noFocusIndicator) {
-        throw new Error('Expected focus indicator to be visible')
-      }
+      await checkFocus('.my-library-dropdown .dropdown-toggle', '.my-library-dropdown', 'box-shadow', 'rgba(49, 132, 253, 0.5) 0px 0px 0px 4px')
+      await checkFocus('.industry-menu .mx-0text-light', '.industry-menu .mx-0text-light', 'outline', 'rgb(0, 113, 173) solid 3px')
     }
   }
 ]
