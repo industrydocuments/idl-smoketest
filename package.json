@@ -1,6 +1,6 @@
 {
   "name": "idl-smoketest",
-  "version": "2.11.2",
+  "version": "2.12.0",
   "description": "Automated smoke tester for the Industry Documents Library",
   "type": "module",
   "bin": "./idl-smoketest.js",
