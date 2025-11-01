@@ -7,7 +7,12 @@ const IDL_URL = process.env.IDL_URL || 'http://localhost:4173/'
 const HEADLESS = !process.env.IDL_SHOWBROWSER
 
 async function setup () {
-  const browser = await puppeteer.launch({ headless: HEADLESS })
+  const browser = await puppeteer.launch({ 
+    headless: HEADLESS,
+    args: [
+      '--unsafely-treat-insecure-origin-as-secure=' + IDL_URL
+    ]
+  })
   const page = (await browser.newPage())
   page.setDefaultTimeout(5000)
   page.setDefaultNavigationTimeout(10000)
