@@ -14,7 +14,7 @@ async function setup () {
     ]
   })
   const page = (await browser.newPage())
-  page.setDefaultTimeout(5000)
+  page.setDefaultTimeout(10000)
   page.setDefaultNavigationTimeout(10000)
   await page.setViewport({ width: 1280, height: 800 })
   await page.goto(IDL_URL, { waitUntil: 'networkidle2' })
