@@ -33,7 +33,6 @@ const tests = [
     }
   },
 
-  // Check 'Learn more' link
   {
     description: 'Check Learn more link',
     test: async (page) => {
@@ -54,7 +53,6 @@ const tests = [
     }
   },
 
-  // Test 'share your feedback' link
   {
     description: 'Check share your feedback link',
     test: async (page) => {
@@ -72,7 +70,6 @@ const tests = [
     }
   },
 
-  // Check header/footer nav links (that aren't links to the home page as those are checked in the previous test)
   {
     description: 'Check header/footer nav links',
     test: async (page) => {
@@ -108,7 +105,6 @@ const tests = [
     }
   },
 
-  // Test MyLibrary menu links
   {
     description: 'Test MyLibrary menu links',
     test: async (page) => {
@@ -135,7 +131,6 @@ const tests = [
     }
   },
 
-  // Test checkboxes on News page
   {
     description: 'Test checkboxes on News page',
     test: async (page) => {
@@ -150,7 +145,6 @@ const tests = [
     }
   },
 
-  // Test dropdown in "What are you looking for?" box
   {
     description: 'Test dropdown in "What are you looking for?" box',
     test: async (page) => {
@@ -196,7 +190,6 @@ const tests = [
     }
   },
 
-  // Test landing page search
   {
     description: 'Test landing page search',
     test: async (page) => {
